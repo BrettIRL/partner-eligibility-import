@@ -19,7 +19,13 @@ async function main() {
         throw new Error("Ingest requires a file. Usage: pnpm ingest --file <path>");
       }
 
-      await importMembers(file);
+      const { accepted, rejected } = await importMembers(file);
+      console.log(`Accepted ${accepted} rows; rejected ${rejected.length} rows.`);
+
+      for (const rejection of rejected) {
+        console.error(JSON.stringify(rejection));
+      }
+
       break;
     }
     case "lookup": {
@@ -38,7 +44,13 @@ async function main() {
         throw new Error("Lookup requires a partner member id. Usage: pnpm lookup --id <id>");
       }
 
-      await lookupMember(partnerMemberId);
+      const member = await lookupMember(partnerMemberId);
+
+      if (!member) {
+        throw new Error(`Member not found: ${partnerMemberId}`);
+      }
+
+      console.log(JSON.stringify(member, null, 2));
       break;
     }
     default:
