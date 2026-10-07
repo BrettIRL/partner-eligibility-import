@@ -1,0 +1,14 @@
+email,policy_end,partner_member_id,last_name,first_name,policy_start,date_of_birth,partner_note
+alice@example.com,2026-12-31,00123,Smith,Alice,2026-01-01,1985-06-15,Unchanged member; retain leading-zero identity
+alan@example.com,2026-12-31,123,Smith,Alan,2026-01-01,1980-03-20,Distinct from member 00123
+bob.new@example.com,2027-12-31,UPDATE-001,Johnson,Robert,2026-02-01,1978-11-02,Update existing member rather than insert
+not-an-email,2027-12-31,KEEP-001,Changed,Changed,2026-02-01,1992-02-29,Reject entire update; preserve Carol White
+shared@example.com,2027-12-31,SHARED-001,Brown,Eva,2026-01-01,1988-08-08,Update only this ID despite shared email
+new@example.com,2026-12-31,NEW-001,Wilson,Harper,2026-01-01,1996-05-14,Insert new member
+corrected@example.com,2026-12-31,BAD-EMAIL,Young,Yasmin,2026-01-01,1980-01-01,Previously rejected ID can now be inserted
+rosa.updated@example.com,2027-12-31,DUP-001,King,Rosa,2026-01-01,1982-04-05,First valid occurrence in this file
+rosa.final@example.com,2028-12-31,DUP-001,King,Rosa,2026-01-01,1982-04-05,Last valid occurrence wins
+not-an-email,2029-12-31,DUP-001,Changed,Changed,2026-01-01,1982-04-05,Invalid later occurrence must not overwrite last valid one
+
+ivy.first@example.com,2026-12-31,DUP-NEW-001,Hall,Ivy,2026-01-01,1994-09-18,First valid occurrence of new member
+ivy.final@example.com,2027-12-31,DUP-NEW-001,Hall,Ivy,2026-01-01,1994-09-18,Last valid occurrence of new member

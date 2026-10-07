@@ -1,0 +1,21 @@
+{
+  "name": "perci-partner-eligibility",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "scripts": {
+    "ingest": "tsx src/cli.ts ingest",
+    "lookup": "tsx src/cli.ts lookup",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "packageManager": "pnpm@12.9.1"
+}
