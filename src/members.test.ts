@@ -237,9 +237,65 @@ describe("importMembers: main logic", () => {
     expect(result.rejected[0]).toMatchObject({
       record: 2,
       partner_member_id: "SHORT-001",
-      errors: expect.arrayContaining(["email is required"]),
+      errors: expect.arrayContaining([
+        "CSV row field count does not match the header",
+        "email is required",
+      ]),
     });
     expect(JSON.parse(await readFile(storagePath, "utf8"))).toEqual([memberB]);
+  });
+
+  it("rejects an overlong replacement without overwriting the member or stopping valid rows", async () => {
+    await seedStorage(JSON.stringify([memberA]));
+    const changedA = { ...memberA, email: "alice.changed@example.com" };
+    const filepath = await writeInput(
+      `${headers}\n${Object.values(changedA).join(",")},UNEXPECTED\n${Object.values(memberB).join(",")}\n`,
+    );
+
+    await expect(importMembers(filepath, storagePath)).resolves.toEqual({
+      accepted: 1,
+      rejected: [
+        {
+          record: 2,
+          partner_member_id: memberA.partner_member_id,
+          errors: ["CSV row field count does not match the header"],
+        },
+      ],
+    });
+    expect(JSON.parse(await readFile(storagePath, "utf8"))).toEqual([memberA, memberB]);
+  });
+
+  it.each([
+    { name: "missing", suffix: "" },
+    { name: "surplus", suffix: ",Internal note,UNEXPECTED" },
+  ])("rejects $name fields even when the header includes an ignored column", async ({ suffix }) => {
+    const filepath = await writeInput(
+      `${headers},notes\n${Object.values(memberA).join(",")}${suffix}\n${Object.values(memberB).join(",")},Internal note\n`,
+    );
+
+    await expect(importMembers(filepath, storagePath)).resolves.toEqual({
+      accepted: 1,
+      rejected: [
+        {
+          record: 2,
+          partner_member_id: memberA.partner_member_id,
+          errors: ["CSV row field count does not match the header"],
+        },
+      ],
+    });
+    expect(JSON.parse(await readFile(storagePath, "utf8"))).toEqual([memberB]);
+  });
+
+  it("does not create storage when every row has surplus fields", async () => {
+    const filepath = await writeInput(
+      `${headers}\n${Object.values(memberA).join(",")},UNEXPECTED\n`,
+    );
+
+    const result = await importMembers(filepath, storagePath);
+
+    expect(result.accepted).toBe(0);
+    expect(result.rejected).toHaveLength(1);
+    await expect(readFile(storagePath)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it.each(corruptStores)(

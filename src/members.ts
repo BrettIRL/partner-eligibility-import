@@ -14,9 +14,13 @@ export async function importMembers(filepath: string, storagePath = STORAGE_PATH
     throw new Error("Input file is empty");
   }
 
-  const rows = parse<Partial<Member>>(contents, {
+  const rows = parse<{ row: Partial<Member>; csvErrors: string[] }, Partial<Member>>(contents, {
     skip_empty_lines: true,
     relax_column_count: true,
+    on_record: (row, { error }) => ({
+      row,
+      csvErrors: error ? ["CSV row field count does not match the header"] : [],
+    }),
     columns: (headers: string[]) => {
       for (const column of requiredColumns) {
         const count = headers.filter((header) => header === column).length;
@@ -44,10 +48,11 @@ export async function importMembers(filepath: string, storagePath = STORAGE_PATH
     errors: string[];
   }[] = [];
 
-  for (const [index, row] of rows.entries()) {
-    const { member, errors } = validateMember(row);
+  for (const [index, { row, csvErrors }] of rows.entries()) {
+    const { member, errors: validationErrors } = validateMember(row);
+    const errors = [...csvErrors, ...validationErrors];
 
-    if (!member) {
+    if (!member || errors.length > 0) {
       rejected.push({
         record: index + 2,
         partner_member_id: row.partner_member_id?.trim() || undefined,
