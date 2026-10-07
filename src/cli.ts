@@ -22,8 +22,11 @@ async function main() {
       const { accepted, rejected } = await importMembers(file);
       console.log(`Accepted ${accepted} rows; rejected ${rejected.length} rows.`);
 
-      for (const rejection of rejected) {
-        console.error(JSON.stringify(rejection));
+      for (const { record, partner_member_id, errors } of rejected) {
+        const memberLabel = partner_member_id === undefined
+          ? "member ID missing"
+          : `member ${JSON.stringify(partner_member_id)}`;
+        console.error(`Record ${record} (${memberLabel}): ${errors.join("; ")}`);
       }
 
       break;
